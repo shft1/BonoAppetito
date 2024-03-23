@@ -1,7 +1,13 @@
 from django.contrib import admin
-from recipes.models import Tags, Ingredients
+from recipes.models import Ingredients, Tags
+
 from .models import UserCustom
 
-admin.site.register(Tags)
-admin.site.register(Ingredients)
-admin.site.register(UserCustom)
+
+class SearchAdmin(admin.ModelAdmin):
+    search_fields = ["^name"]
+
+
+admin.site.register(Tags, SearchAdmin)
+admin.site.register(Ingredients, SearchAdmin)
+admin.site.register(UserCustom, SearchAdmin)
