@@ -96,3 +96,15 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
+
+DJOSER = {
+    'HIDE_USERS': False,
+    'SERIALIZERS': {
+        'user': 'api.v1.serializers.CustomUserSerializer',
+        'current_user': 'api.v1.serializers.CustomUserSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.AllowAny'],  # дописать нормальный пермишн
+    },
+}

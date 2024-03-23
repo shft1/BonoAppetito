@@ -1,6 +1,7 @@
 from recipes.models import Ingredients, Tags
 from rest_framework.filters import SearchFilter
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from djoser.views import UserViewSet
 
 from .serializers import IngredientsSerializer, TagsSerializer
 
