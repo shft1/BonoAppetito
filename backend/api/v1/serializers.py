@@ -1,7 +1,8 @@
-from recipes.models import Ingredients, Tags
-from rest_framework.serializers import ModelSerializer
-from djoser.serializers import UserSerializer
 from django.contrib.auth import get_user_model
+from djoser.serializers import UserCreateMixin, UserSerializer
+from recipes.models import Ingredients, Tags
+from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 
 User = get_user_model()
 

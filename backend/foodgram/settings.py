@@ -98,6 +98,7 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
+    'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'SERIALIZERS': {
         'user': 'api.v1.serializers.CustomUserSerializer',
@@ -105,6 +106,6 @@ DJOSER = {
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['rest_framework.permissions.AllowAny'],  # дописать нормальный пермишн
+        'user': ['api.v1.permissions.MeOrAllowAny'],
     },
 }
