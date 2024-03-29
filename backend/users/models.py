@@ -13,3 +13,16 @@ class UserCustom(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        UserCustom,
+        on_delete=models.CASCADE,
+        related_name='follow',
+    )
+    follow = models.ForeignKey(
+        UserCustom,
+        on_delete=models.CASCADE,
+        related_name='subscriber'
+    )
