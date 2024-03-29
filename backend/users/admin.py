@@ -1,7 +1,7 @@
 from django.contrib import admin
 from recipes.models import Ingredients, Tags
 
-from .models import UserCustom
+from .models import Subscription, UserCustom
 
 
 class SearchAdmin(admin.ModelAdmin):
@@ -11,3 +11,4 @@ class SearchAdmin(admin.ModelAdmin):
 admin.site.register(Tags, SearchAdmin)
 admin.site.register(Ingredients, SearchAdmin)
 admin.site.register(UserCustom, SearchAdmin)
+admin.site.register(Subscription, SearchAdmin)

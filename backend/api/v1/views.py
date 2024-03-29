@@ -24,8 +24,8 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 
 class SubscribeViewSet(ModelViewSet):
-    # serializer_class = Subscribe_POST_Serializer
-    serializer_class = Subscribe_GET_Serializer
+    serializer_class = Subscribe_POST_Serializer
+    # serializer_class = Subscribe_GET_Serializer
     queryset = Subscription.objects.all()
 
     @action(detail=False, url_path='subscriptions')

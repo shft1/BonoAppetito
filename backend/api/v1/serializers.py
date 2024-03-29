@@ -28,9 +28,8 @@ class CustomUserSerializer(UserSerializer):
 
 
 class Subscribe_POST_Serializer(ModelSerializer):
-    user = serializers.SlugRelatedField(
+    user = serializers.PrimaryKeyRelatedField(
         read_only=True,
-        slug_field='username',
         default=serializers.CurrentUserDefault()
     )
 
@@ -46,16 +45,16 @@ class Subscribe_POST_Serializer(ModelSerializer):
             )
         ]
 
-        def validate(self, data):
-            if data['user'] == data['follow']:
-                raise serializers.ValidationError(
-                    'Нельзя на себя подписываться!'
-                )
+    def validate_follow(self, value):
+        if value == self.context['request'].user:
+            raise serializers.ValidationError(
+                'Нельзя на себя подписываться!'
+            )
+        return value
 
 
 class Subscribe_GET_Serializer(ModelSerializer):
-    is_subscribed = serializers.BooleanField(read_only=True,
-                                             default=True)
+    is_subscribed = serializers.BooleanField(read_only=True, default=True)
 
     class Meta:
         model = User
