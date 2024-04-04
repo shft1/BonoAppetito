@@ -9,7 +9,7 @@ router.register('ingredients', IngredientsViewSet, basename='ingredient')
 router.register('users', SubscribeViewSet, basename='subscribe')
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('', include(router.urls)),
 ]

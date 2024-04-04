@@ -27,9 +27,8 @@ class CustomUserSerializer(UserSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name')
 
 
-class Subscribe_POST_Serializer(ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
-        read_only=True,
+class SubscribeCreateSerializer(ModelSerializer):
+    user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
 
