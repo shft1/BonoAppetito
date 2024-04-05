@@ -1,5 +1,5 @@
 from djoser.views import UserViewSet
-from recipes.models import Ingredients, Tags
+from recipes.models import Ingredients, Recipes, Tags
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
-from .serializers import (IngredientsSerializer, Subscribe_GET_Serializer,
+from .serializers import (IngredientsSerializer, RecipeCreateSerializer,
+                          RecipeReadSerializer, Subscribe_GET_Serializer,
                           SubscribeCreateSerializer, TagsSerializer)
 
 
@@ -52,3 +53,13 @@ class SubscribeViewSet(ModelViewSet):
                             status=status.HTTP_201_CREATED)
         Subscription.objects.filter(user=request.user, follow=pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RecipesViewSet(ModelViewSet):
+    queryset = Recipes.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeReadSerializer
+        else:
+            return RecipeCreateSerializer

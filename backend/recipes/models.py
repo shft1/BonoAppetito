@@ -1,7 +1,7 @@
 from colorfield.fields import ColorField
-from django.db import models
-from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
+from django.db import models
 
 User = get_user_model()
 
@@ -23,27 +23,22 @@ class Tags(models.Model):
         return self.slug[:25]
 
 
-# class Favorite(models.Model):
-#     recipes = models.ForeignKey(
-
-#     )
-#     users = models.ForeignKey(
-
-#     )
-
-
 class Recipes(models.Model):
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='recipes',
-    )
-    ingredients = models.ManyToManyField(
-        Ingredients, through='Recipes_Ingredients'
-    )
+    # author = models.ForeignKey(
+    #     User,
+    #     on_delete=models.CASCADE,
+    #     related_name='recipes',
+    #     null=True
+    # )
+    # ingredients = models.ManyToManyField(
+    #     Ingredients, through='Recipes_Ingredients', related_name='recipes',
+    # )
     tags = models.ManyToManyField(
-        Tags, through='Recipes_Tags'
+        Tags, related_name='recipes'
     )
+    # favorite = models.ManyToManyField(
+    #     User, related_name='favorite_recipes', null=True
+    # )
     image = models.ImageField(
         upload_to='recipes/images/',
     )
@@ -63,15 +58,3 @@ class Recipes_Ingredients(models.Model):
 
     def __str__(self):
         return f'{self.recipes} - {self.ingredients}'
-
-
-class Recipes_Tags(models.Model):
-    recipes = models.ForeignKey(
-        Recipes, on_delete=models.CASCADE, related_name='tags'
-    )
-    tags = models.ForeignKey(
-        Tags, on_delete=models.CASCADE, related_name='recipes'
-    )
-
-    def __str__(self):
-        return f'{self.recipes} - {self.tags}'
