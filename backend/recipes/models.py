@@ -24,12 +24,11 @@ class Tags(models.Model):
 
 
 class Recipes(models.Model):
-    # author = models.ForeignKey(
-    #     User,
-    #     on_delete=models.CASCADE,
-    #     related_name='recipes',
-    #     null=True
-    # )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes',
+    )
     # ingredients = models.ManyToManyField(
     #     Ingredients, through='Recipes_Ingredients', related_name='recipes',
     # )

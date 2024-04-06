@@ -64,14 +64,6 @@ class Subscribe_GET_Serializer(ModelSerializer):
                   'first_name', 'last_name', 'is_subscribed')
 
 
-class RecipeReadSerializer(ModelSerializer):
-    tags = TagsSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Recipes
-        fields = ('id', 'tags', 'image', 'name', 'text', 'cooking_time')
-
-
 class ConvertToImage(serializers.ImageField):
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
@@ -84,10 +76,14 @@ class ConvertToImage(serializers.ImageField):
 
 class RecipeCreateSerializer(ModelSerializer):
     image = ConvertToImage()
+    author = serializers.PrimaryKeyRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Recipes
-        fields = ('id', 'tags', 'image', 'name', 'text', 'cooking_time')
+        fields = ('id', 'tags', 'author',
+                  'image', 'name', 'text', 'cooking_time')
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -95,3 +91,13 @@ class RecipeCreateSerializer(ModelSerializer):
         for tag in tags:
             recipe.tags.add(tag)
         return recipe
+
+
+class RecipeReadSerializer(ModelSerializer):
+    tags = TagsSerializer(many=True, read_only=True)
+    author = CustomUserSerializer()
+
+    class Meta:
+        model = Recipes
+        fields = ('id', 'tags', 'author',
+                  'image', 'name', 'text', 'cooking_time')

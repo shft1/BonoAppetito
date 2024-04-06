@@ -72,4 +72,4 @@ class RecipesViewSet(ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        return serializer.save()
+        return serializer.save(author=self.request.user)
