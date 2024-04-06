@@ -63,3 +63,13 @@ class RecipesViewSet(ModelViewSet):
             return RecipeReadSerializer
         else:
             return RecipeCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recipe = self.perform_create(serializer)
+        return Response(RecipeReadSerializer(recipe).data,
+                        status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        return serializer.save()

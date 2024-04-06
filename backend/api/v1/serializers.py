@@ -65,7 +65,11 @@ class Subscribe_GET_Serializer(ModelSerializer):
 
 
 class RecipeReadSerializer(ModelSerializer):
-    pass
+    tags = TagsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Recipes
+        fields = ('id', 'tags', 'image', 'name', 'text', 'cooking_time')
 
 
 class ConvertToImage(serializers.ImageField):
@@ -80,7 +84,6 @@ class ConvertToImage(serializers.ImageField):
 
 class RecipeCreateSerializer(ModelSerializer):
     image = ConvertToImage()
-    # tags = TagsSerializer(many=True)
 
     class Meta:
         model = Recipes
