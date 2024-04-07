@@ -29,9 +29,9 @@ class Recipes(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes',
     )
-    # ingredients = models.ManyToManyField(
-    #     Ingredients, through='Recipes_Ingredients', related_name='recipes',
-    # )
+    ingredients = models.ManyToManyField(                       # начал работу с ingredients
+        Ingredients, through='Recipes_Ingredients', related_name='recipes',
+    )
     tags = models.ManyToManyField(
         Tags, related_name='recipes'
     )
@@ -48,10 +48,10 @@ class Recipes(models.Model):
 
 class Recipes_Ingredients(models.Model):
     recipes = models.ForeignKey(
-        Recipes, on_delete=models.CASCADE, related_name='ingredients'
+        Recipes, on_delete=models.CASCADE
     )
     ingredients = models.ForeignKey(
-        Ingredients, on_delete=models.CASCADE, related_name='recipes'
+        Ingredients, on_delete=models.CASCADE
     )
     amount = models.IntegerField()
 
