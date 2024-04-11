@@ -64,12 +64,25 @@ class Subscribe_GET_Serializer(ModelSerializer):
                   'first_name', 'last_name', 'is_subscribed')
 
 
-class IngredientsAmount(ModelSerializer):
-    ingredients = IngredientsSerializer()
+class IngredientsAmountRead(ModelSerializer):
+    id = serializers.IntegerField(source='ingredients.id')
+    name = serializers.CharField(source='ingredients.name')
+    measurement_unit = serializers.CharField(
+        source='ingredients.measurement_unit')
 
     class Meta:
         model = Recipes_Ingredients
-        fields = ('ingredients', 'amount')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class IngredientsAmount(ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        source='ingredients', queryset=Ingredients.objects.all()
+    )
+
+    class Meta:
+        model = Recipes_Ingredients
+        fields = ('id', 'amount')
 
 
 class ConvertToImage(serializers.ImageField):
@@ -87,6 +100,7 @@ class RecipeCreateSerializer(ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
+    ingredients = IngredientsAmount(many=True, write_only=True)
 
     class Meta:
         model = Recipes
@@ -101,7 +115,7 @@ class RecipeCreateSerializer(ModelSerializer):
             recipe.tags.add(tag)
         for ingredient in ingredients:
             recipe.ingredients.add(
-                ingredient["id"],
+                ingredient["ingredients"],
                 through_defaults={"amount": ingredient["amount"]}
             )
         return recipe
@@ -110,7 +124,7 @@ class RecipeCreateSerializer(ModelSerializer):
 class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
     author = CustomUserSerializer()
-    ingredients = IngredientsAmount(many=True, read_only=True)
+    ingredients = IngredientsAmountRead(many=True, read_only=True)
 
     class Meta:
         model = Recipes
