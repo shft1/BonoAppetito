@@ -3,7 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateMixin, UserSerializer
-from recipes.models import Ingredients, Recipes, Tags
+from recipes.models import Ingredients, Recipes, Recipes_Ingredients, Tags
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
@@ -64,6 +64,14 @@ class Subscribe_GET_Serializer(ModelSerializer):
                   'first_name', 'last_name', 'is_subscribed')
 
 
+class IngredientsAmount(ModelSerializer):
+    ingredients = IngredientsSerializer()
+
+    class Meta:
+        model = Recipes_Ingredients
+        fields = ('ingredients', 'amount')
+
+
 class ConvertToImage(serializers.ImageField):
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
@@ -82,22 +90,29 @@ class RecipeCreateSerializer(ModelSerializer):
 
     class Meta:
         model = Recipes
-        fields = ('id', 'tags', 'author',
+        fields = ('id', 'tags', 'author', 'ingredients',
                   'image', 'name', 'text', 'cooking_time')
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
         recipe = Recipes.objects.create(**validated_data)
         for tag in tags:
             recipe.tags.add(tag)
+        for ingredient in ingredients:
+            recipe.ingredients.add(
+                ingredient["id"],
+                through_defaults={"amount": ingredient["amount"]}
+            )
         return recipe
 
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
     author = CustomUserSerializer()
+    ingredients = IngredientsAmount(many=True, read_only=True)
 
     class Meta:
         model = Recipes
-        fields = ('id', 'tags', 'author',
+        fields = ('id', 'tags', 'author', 'ingredients',
                   'image', 'name', 'text', 'cooking_time')

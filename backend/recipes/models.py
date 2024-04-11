@@ -29,7 +29,7 @@ class Recipes(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes',
     )
-    ingredients = models.ManyToManyField(                       # начал работу с ingredients
+    ingredients = models.ManyToManyField(
         Ingredients, through='Recipes_Ingredients', related_name='recipes',
     )
     tags = models.ManyToManyField(
