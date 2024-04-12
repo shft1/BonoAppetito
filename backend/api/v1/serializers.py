@@ -124,7 +124,8 @@ class RecipeCreateSerializer(ModelSerializer):
 class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
     author = CustomUserSerializer()
-    ingredients = IngredientsAmountRead(many=True, read_only=True)
+    ingredients = IngredientsAmountRead(many=True, read_only=True,
+                                        source='ingredients_amount')
 
     class Meta:
         model = Recipes
