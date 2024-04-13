@@ -25,9 +25,20 @@ class IngredientsSerializer(ModelSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='check_is_subscribed'
+    )
+
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name')
+        fields = ('email', 'id', 'username',
+                  'first_name', 'last_name', 'is_subscribed')
+
+    def check_is_subscribed(self, obj):
+        if obj.subscriber.get(pk=self.context['request'].user.id):
+            return 'true'
+        else:
+            return 'false'
 
 
 class SubscribeCreateSerializer(ModelSerializer):
