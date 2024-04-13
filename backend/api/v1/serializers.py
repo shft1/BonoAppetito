@@ -35,9 +35,10 @@ class CustomUserSerializer(UserSerializer):
                   'first_name', 'last_name', 'is_subscribed')
 
     def check_is_subscribed(self, obj):
-        if obj.subscriber.get(pk=self.context['request'].user.id):
+        try:
+            obj.subscriber.get(user=self.context['request'].user)
             return 'true'
-        else:
+        except Subscription.DoesNotExist:
             return 'false'
 
 
