@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
 from .serializers import (IngredientsSerializer, RecipeCreateSerializer,
-                          RecipeReadSerializer, Subscribe_GET_Serializer,
+                          RecipeReadSerializer, CustomUserSerializer,
                           SubscribeCreateSerializer, TagsSerializer)
 
 
@@ -30,7 +30,7 @@ class SubscribeViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return Subscribe_GET_Serializer
+            return CustomUserSerializer
         else:
             return SubscribeCreateSerializer
 
@@ -49,7 +49,7 @@ class SubscribeViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             user = UserCustom.objects.get(pk=pk)
-            return Response(Subscribe_GET_Serializer(user).data,
+            return Response(CustomUserSerializer(user).data,
                             status=status.HTTP_201_CREATED)
         Subscription.objects.filter(user=request.user, follow=pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -68,8 +68,11 @@ class RecipesViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         recipe = self.perform_create(serializer)
-        return Response(RecipeReadSerializer(recipe).data,
-                        status=status.HTTP_201_CREATED)
+        return Response(
+            RecipeReadSerializer(
+                recipe, context={'request': request}
+            ).data, status=status.HTTP_201_CREATED
+        )
 
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)
