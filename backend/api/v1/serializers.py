@@ -132,6 +132,23 @@ class RecipeCreateSerializer(ModelSerializer):
             )
         return recipe
 
+    def update(self, instance, validated_data):
+        instance.image = validated_data.get('image')
+        instance.name = validated_data.get('name')
+        instance.text = validated_data.get('text')
+        instance.cooking_time = validated_data.get('cooking_time')
+        instance.save()
+
+        instance.tags.set(validated_data.get('tags'))
+
+        instance.ingredients.clear()
+        for ingredient in validated_data.get('ingredients'):
+            instance.ingredients.add(
+                ingredient["ingredients"],
+                through_defaults={"amount": ingredient["amount"]}
+            )
+        return instance
+
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)

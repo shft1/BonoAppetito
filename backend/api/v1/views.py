@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
-from .serializers import (IngredientsSerializer, RecipeCreateSerializer,
-                          RecipeReadSerializer, CustomUserSerializer,
+from .serializers import (CustomUserSerializer, IngredientsSerializer,
+                          RecipeCreateSerializer, RecipeReadSerializer,
                           SubscribeCreateSerializer, TagsSerializer)
 
 
@@ -76,3 +76,19 @@ class RecipesViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        new_recipe = self.perform_update(serializer)
+        return Response(
+            RecipeReadSerializer(
+                new_recipe, context={'request': request}
+            ).data, status=status.HTTP_200_OK
+        )
+
+    def perform_update(self, serializer):
+        return serializer.save()
