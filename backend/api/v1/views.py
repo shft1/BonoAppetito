@@ -25,6 +25,7 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
     search_fields = ('^name',)
 
 
+'''
 class SubscribeViewSet(ModelViewSet):
     queryset = Subscription.objects.all()
 
@@ -52,6 +53,34 @@ class SubscribeViewSet(ModelViewSet):
             return Response(CustomUserSerializer(user).data,
                             status=status.HTTP_201_CREATED)
         Subscription.objects.filter(user=request.user, follow=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+'''
+
+
+class CustomUserViewSet(UserViewSet):
+
+    @action(detail=False, url_path='subscriptions',
+            serializer_class=CustomUserSerializer)
+    def get_subscriptions(self, request):
+        subs_id_queryset = request.user.follow.values("follow")
+        subs_id_list = [dict_id['follow'] for dict_id in subs_id_queryset]
+        subs = UserCustom.objects.filter(pk__in=subs_id_list)
+        serializer = self.get_serializer(subs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post', 'delete'],
+            url_path='subscribe', serializer_class=SubscribeCreateSerializer)
+    def post_del_subscriptions(self, request, id):
+        if request.method == 'POST':
+            serializer = self.get_serializer(data={'follow': id})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            user = UserCustom.objects.get(pk=id)
+            return Response(
+                CustomUserSerializer(user, context={'request': request}).data,
+                status=status.HTTP_201_CREATED,
+            )
+        Subscription.objects.filter(user=request.user, follow=id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
