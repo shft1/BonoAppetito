@@ -131,7 +131,7 @@ class RecipesViewSet(ModelViewSet):
                 data={'recipes': pk}, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
+            serializer.save()
             recipe = Recipes.objects.get(pk=pk)
             return Response(
                 FavoriteRead(recipe).data,
