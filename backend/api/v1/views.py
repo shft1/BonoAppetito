@@ -1,5 +1,5 @@
 from djoser.views import UserViewSet
-from recipes.models import Ingredients, Recipe_Favorite, Recipes, Tags
+from recipes.models import Ingredients, Recipe_Favorite, Recipes, Tags, Shopping_Cart
 from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -8,10 +8,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
-from .serializers import (CustomUserSerializer, FavoriteCreate, FavoriteRead,
+from .serializers import (CustomUserSerializer, FavoriteCreate, ShortRecipeRead,
                           IngredientsSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, SubscribeCreateSerializer,
-                          TagsSerializer)
+                          TagsSerializer, ShoppingCreateSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -108,7 +108,7 @@ class RecipesViewSet(ModelViewSet):
             serializer.save()
             recipe = Recipes.objects.get(pk=pk)
             return Response(
-                FavoriteRead(recipe).data,
+                ShortRecipeRead(recipe).data,
                 status=status.HTTP_201_CREATED
             )
         else:
@@ -120,3 +120,27 @@ class RecipesViewSet(ModelViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(data={'errors': 'Такого рецепта нет в избранном!'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
+    def post_del_shopping_cart(self, request, pk):
+        if request.method == 'POST':
+            serializer = ShoppingCreateSerializer(
+                data={'recipes': pk}, context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            recipe = Recipes.objects.get(pk=pk)
+            return Response(
+                ShortRecipeRead(recipe).data,
+                status=status.HTTP_201_CREATED
+            )
+        object_shop = Shopping_Cart.objects.filter(
+            users=request.user, recipes=pk
+        )
+        if object_shop:
+            object_shop.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            data={'errors': 'Такого рецепта нет в списке покупок!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )

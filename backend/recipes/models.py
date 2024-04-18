@@ -38,6 +38,9 @@ class Recipes(models.Model):
     favorite = models.ManyToManyField(
         User, through='Recipe_Favorite', related_name='favorite_recipes',
     )
+    shopping_cart = models.ManyToManyField(
+        User, through='Shopping_Cart', related_name='recipe_in_shopping_cart'
+    )
     image = models.ImageField(
         upload_to='recipes/images/',
     )
@@ -68,6 +71,20 @@ class Recipe_Favorite(models.Model):
     users = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='recipes_favorite'
+    )
+
+    def __str__(self):
+        return f'{self.users} - {self.recipes}'
+
+
+class Shopping_Cart(models.Model):
+    recipes = models.ForeignKey(
+        Recipes, on_delete=models.CASCADE,
+        related_name='users_shopping_cart'
+    )
+    users = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='recipes_shopping_cart'
     )
 
     def __str__(self):

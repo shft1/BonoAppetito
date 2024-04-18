@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateMixin, UserSerializer
 from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Recipes_Ingredients, Tags)
+                            Recipes_Ingredients, Tags, Shopping_Cart)
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
@@ -61,7 +61,7 @@ class FavoriteCreate(ModelSerializer):
         ]
 
 
-class FavoriteRead(ModelSerializer):
+class ShortRecipeRead(ModelSerializer):
     class Meta:
         model = Recipes
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -185,3 +185,21 @@ class RecipeReadSerializer(ModelSerializer):
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients',
                   'image', 'name', 'text', 'cooking_time')
+
+
+class ShoppingCreateSerializer(ModelSerializer):
+    users = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Shopping_Cart
+        fields = ('recipes', 'users')
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe_Favorite.objects.all(),
+                fields=('recipes', 'users'),
+                message='Этот рецепт уже в избранном!'
+            )
+        ]
