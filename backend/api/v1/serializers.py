@@ -3,7 +3,8 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateMixin, UserSerializer
-from recipes.models import Ingredients, Recipes, Recipes_Ingredients, Tags
+from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
+                            Recipes_Ingredients, Tags)
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
@@ -40,6 +41,30 @@ class CustomUserSerializer(UserSerializer):
             return 'true'
         except Subscription.DoesNotExist:
             return 'false'
+
+
+class FavoriteCreate(ModelSerializer):
+    users = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Recipe_Favorite
+        fields = ('recipes', 'users')
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe_Favorite.objects.all(),
+                fields=('recipes', 'users'),
+                message='Этот рецепт уже в избранном!'
+            )
+        ]
+
+
+class FavoriteRead(ModelSerializer):
+    class Meta:
+        model = Recipes
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SubscribeCreateSerializer(ModelSerializer):

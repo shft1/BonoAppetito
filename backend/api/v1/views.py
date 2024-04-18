@@ -1,6 +1,6 @@
 from djoser.views import UserViewSet
-from recipes.models import Ingredients, Recipes, Tags
-from rest_framework import status
+from recipes.models import Ingredients, Recipe_Favorite, Recipes, Tags
+from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
@@ -8,9 +8,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
-from .serializers import (CustomUserSerializer, IngredientsSerializer,
-                          RecipeCreateSerializer, RecipeReadSerializer,
-                          SubscribeCreateSerializer, TagsSerializer)
+from .serializers import (CustomUserSerializer, FavoriteCreate, FavoriteRead,
+                          IngredientsSerializer, RecipeCreateSerializer,
+                          RecipeReadSerializer, SubscribeCreateSerializer,
+                          TagsSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -121,3 +122,27 @@ class RecipesViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         return serializer.save()
+
+    @action(detail=True, methods=['post', 'delete'],
+            url_path='favorite', serializer_class=FavoriteCreate)
+    def post_del_favorite(self, request, pk):
+        if request.method == 'POST':
+            serializer = FavoriteCreate(
+                data={'recipes': pk}, context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            recipe = Recipes.objects.get(pk=pk)
+            return Response(
+                FavoriteRead(recipe).data,
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            object = Recipe_Favorite.objects.filter(
+                users=request.user, recipes=pk
+            )
+            if object:
+                object.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(data={'errors': 'Такого рецепта нет в избранном!'},
+                            status=status.HTTP_400_BAD_REQUEST)
