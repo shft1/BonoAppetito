@@ -26,38 +26,6 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
     search_fields = ('^name',)
 
 
-'''
-class SubscribeViewSet(ModelViewSet):
-    queryset = Subscription.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return CustomUserSerializer
-        else:
-            return SubscribeCreateSerializer
-
-    @action(detail=False, url_path='subscriptions')
-    def get_subscriptions(self, request):
-        subs_id_queryset = request.user.follow.values("follow")
-        subs_id_list = [dict_id['follow'] for dict_id in subs_id_queryset]
-        subs = UserCustom.objects.filter(pk__in=subs_id_list)
-        serializer = self.get_serializer(subs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post', 'delete'], url_path='subscribe')
-    def post_del_subscriptions(self, request, pk):
-        if request.method == 'POST':
-            serializer = self.get_serializer(data={'follow': pk})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            user = UserCustom.objects.get(pk=pk)
-            return Response(CustomUserSerializer(user).data,
-                            status=status.HTTP_201_CREATED)
-        Subscription.objects.filter(user=request.user, follow=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-'''
-
-
 class CustomUserViewSet(UserViewSet):
 
     @action(detail=False, url_path='subscriptions',
@@ -81,8 +49,14 @@ class CustomUserViewSet(UserViewSet):
                 CustomUserSerializer(user, context={'request': request}).data,
                 status=status.HTTP_201_CREATED,
             )
-        Subscription.objects.filter(user=request.user, follow=id).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        object_sub = Subscription.objects.filter(user=request.user, follow=id)
+        if object_sub:
+            object_sub.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            data={'errors': 'Вы не были подписаны на этого пользователя!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class RecipesViewSet(ModelViewSet):
@@ -138,11 +112,11 @@ class RecipesViewSet(ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
         else:
-            object = Recipe_Favorite.objects.filter(
+            object_fav = Recipe_Favorite.objects.filter(
                 users=request.user, recipes=pk
             )
-            if object:
-                object.delete()
+            if object_fav:
+                object_fav.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(data={'errors': 'Такого рецепта нет в избранном!'},
                             status=status.HTTP_400_BAD_REQUEST)

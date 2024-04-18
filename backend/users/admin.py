@@ -1,5 +1,5 @@
 from django.contrib import admin
-from recipes.models import Ingredients, Recipes, Tags, Recipe_Favorite
+from recipes.models import Ingredients, Recipes, Tags
 
 from .models import Subscription, UserCustom
 
@@ -13,4 +13,3 @@ admin.site.register(Ingredients, SearchAdmin)
 admin.site.register(UserCustom, SearchAdmin)
 admin.site.register(Subscription, SearchAdmin)
 admin.site.register(Recipes, SearchAdmin)
-admin.site.register(Recipe_Favorite, SearchAdmin)
