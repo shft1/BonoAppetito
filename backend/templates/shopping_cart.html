@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang='ru'>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <header>
+      <h1>Список ингредиентов</h1>
+    </header>
+    <main>
+      <ol>
+      {% for ingredient in ingredients %}
+        <li>{{ ingredient.name }}
+          ({{ ingredient.measurement_unit }}) - 
+          {{ ingredient.amount }} </li>
+      {% endfor %}
+      </ol>
+    </main>
+    <footer>
+      Лучше не смотреть сюда на голодный желудок.
+    </footer>
+  </body>
+</html>

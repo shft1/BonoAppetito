@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateMixin, UserSerializer
 from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Recipes_Ingredients, Tags, Shopping_Cart)
+                            Recipes_Ingredients, Shopping_Cart, Tags)
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
@@ -198,8 +198,8 @@ class ShoppingCreateSerializer(ModelSerializer):
 
         validators = [
             UniqueTogetherValidator(
-                queryset=Recipe_Favorite.objects.all(),
+                queryset=Shopping_Cart.objects.all(),
                 fields=('recipes', 'users'),
-                message='Этот рецепт уже в избранном!'
+                message='Этот рецепт уже в списке покупок!'
             )
         ]

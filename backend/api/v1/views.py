@@ -1,17 +1,20 @@
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from djoser.views import UserViewSet
-from recipes.models import Ingredients, Recipe_Favorite, Recipes, Tags, Shopping_Cart
-from rest_framework import exceptions, status
+from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
+                            Shopping_Cart, Tags)
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
-from .serializers import (CustomUserSerializer, FavoriteCreate, ShortRecipeRead,
+from .serializers import (CustomUserSerializer, FavoriteCreate,
                           IngredientsSerializer, RecipeCreateSerializer,
-                          RecipeReadSerializer, SubscribeCreateSerializer,
-                          TagsSerializer, ShoppingCreateSerializer)
+                          RecipeReadSerializer, ShoppingCreateSerializer,
+                          ShortRecipeRead, SubscribeCreateSerializer,
+                          TagsSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -144,3 +147,37 @@ class RecipesViewSet(ModelViewSet):
             data={'errors': 'Такого рецепта нет в списке покупок!'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    def get_shopping_cart(self, request):
+        union_ing = dict()
+        recipes_in_shopping_cart = request.user.recipe_in_shopping_cart.all()
+        for recipe in recipes_in_shopping_cart:
+            ingredients_for_recipe = recipe.ingredients_amount.values(
+                'amount', 'ingredients__name', 'ingredients__measurement_unit'
+            )
+            for ingredient in ingredients_for_recipe:
+                name_ingredient = ingredient['ingredients__name']
+                amount = ingredient['amount']
+                measurement_unit = ingredient['ingredients__measurement_unit']
+                if name_ingredient in union_ing:
+                    union_ing[name_ingredient] = {
+                        'name': name_ingredient,
+                        'amount': union_ing[name_ingredient]['amount']+amount,
+                        'measurement_unit': measurement_unit
+                    }
+                else:
+                    union_ing[name_ingredient] = {
+                        'name': name_ingredient,
+                        'amount': amount,
+                        'measurement_unit': measurement_unit
+                    }
+        context = {'ingredients': union_ing.values()}
+        shopping_cart = render_to_string(
+            'shopping_cart.html', context=context
+        )
+        response = HttpResponse(content_type='text/plain')
+        header = 'attachment; filename="shopping_cart.txt"'
+        response['Content-Disposition'] = header
+        response.write(shopping_cart)
+        return response
