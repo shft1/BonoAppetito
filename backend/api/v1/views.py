@@ -10,6 +10,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
+from .filters import RecipeFilter
 
 from .pagination import CustomPagination
 from .serializers import (CustomUserSerializer, FavoriteCreate,
@@ -67,14 +68,17 @@ class CustomUserViewSet(UserViewSet):
 class RecipesViewSet(ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author',)
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
-        user = self.request.user
         query_params = self.request.query_params
         if query_params.get('is_favorited'):
+            user = self.request.user
             return user.favorite_recipes.all()
-        if 
+        if query_params.get('is_in_shopping_cart'):
+            user = self.request.user
+            return user.recipe_in_shopping_cart.all()
+        return Recipes.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
