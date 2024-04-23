@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
                             Shopping_Cart, Tags)
@@ -10,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
 
+from .pagination import CustomPagination
 from .serializers import (CustomUserSerializer, FavoriteCreate,
                           IngredientsSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, ShoppingCreateSerializer,
@@ -63,7 +65,16 @@ class CustomUserViewSet(UserViewSet):
 
 
 class RecipesViewSet(ModelViewSet):
-    queryset = Recipes.objects.all()
+    pagination_class = CustomPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('author',)
+
+    def get_queryset(self):
+        user = self.request.user
+        query_params = self.request.query_params
+        if query_params.get('is_favorited'):
+            return user.favorite_recipes.all()
+        if 
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

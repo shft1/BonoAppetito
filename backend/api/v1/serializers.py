@@ -2,7 +2,7 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from djoser.serializers import UserCreateMixin, UserSerializer
+from djoser.serializers import UserSerializer
 from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
                             Recipes_Ingredients, Shopping_Cart, Tags)
 from rest_framework import serializers
@@ -165,7 +165,6 @@ class RecipeCreateSerializer(ModelSerializer):
         instance.save()
 
         instance.tags.set(validated_data.get('tags'))
-
         instance.ingredients.clear()
         for ingredient in validated_data.get('ingredients'):
             instance.ingredients.add(
@@ -180,11 +179,28 @@ class RecipeReadSerializer(ModelSerializer):
     author = CustomUserSerializer()
     ingredients = IngredientsAmountRead(many=True, read_only=True,
                                         source='ingredients_amount')
+    is_favorited = serializers.SerializerMethodField(
+        method_name='check_is_favorited'
+    )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='check_is_in_shopping_cart'
+    )
 
     class Meta:
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients',
-                  'image', 'name', 'text', 'cooking_time')
+                  'image', 'name', 'text', 'cooking_time',
+                  'is_favorited', 'is_in_shopping_cart')
+
+    def check_is_favorited(self, obj):
+        if obj in self.context['request'].user.favorite_recipes.all():
+            return 'true'
+        return 'false'
+
+    def check_is_in_shopping_cart(self, obj):
+        if obj in self.context['request'].user.recipe_in_shopping_cart.all():
+            return 'true'
+        return 'false'
 
 
 class ShoppingCreateSerializer(ModelSerializer):
