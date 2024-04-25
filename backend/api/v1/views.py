@@ -7,12 +7,14 @@ from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription, UserCustom
-from .filters import RecipeFilter
 
+from .filters import RecipeFilter
 from .pagination import CustomPagination
+from .permissions import RecipePermission
 from .serializers import (CustomUserSerializer, FavoriteCreate,
                           IngredientsSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, ShoppingCreateSerializer,
@@ -23,11 +25,13 @@ from .serializers import (CustomUserSerializer, FavoriteCreate,
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
+    pagination_class = None
 
 
 class IngredientsViewSet(ReadOnlyModelViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
+    pagination_class = None
     filter_backends = (SearchFilter,)
     search_fields = ('^name',)
 
@@ -66,9 +70,10 @@ class CustomUserViewSet(UserViewSet):
 
 
 class RecipesViewSet(ModelViewSet):
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+    permission_classes = (RecipePermission,)
 
     def get_queryset(self):
         query_params = self.request.query_params
@@ -115,8 +120,7 @@ class RecipesViewSet(ModelViewSet):
     def perform_update(self, serializer):
         return serializer.save()
 
-    @action(detail=True, methods=['post', 'delete'],
-            url_path='favorite', serializer_class=FavoriteCreate)
+    @action(detail=True, methods=['post', 'delete'], url_path='favorite',)
     def post_del_favorite(self, request, pk):
         if request.method == 'POST':
             serializer = FavoriteCreate(

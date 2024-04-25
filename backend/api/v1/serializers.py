@@ -38,9 +38,11 @@ class CustomUserSerializer(UserSerializer):
     def check_is_subscribed(self, obj):
         try:
             obj.subscriber.get(user=self.context['request'].user)
-            return 'true'
+            return True
         except Subscription.DoesNotExist:
-            return 'false'
+            return False
+        except TypeError:
+            return False
 
 
 class FavoriteCreate(ModelSerializer):
@@ -189,18 +191,25 @@ class RecipeReadSerializer(ModelSerializer):
     class Meta:
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients',
-                  'image', 'name', 'text', 'cooking_time',
-                  'is_favorited', 'is_in_shopping_cart')
+                  'is_favorited', 'is_in_shopping_cart',
+                  'name', 'image', 'text', 'cooking_time',
+                  )
 
     def check_is_favorited(self, obj):
-        if obj in self.context['request'].user.favorite_recipes.all():
-            return 'true'
-        return 'false'
+        try:
+            if obj in self.context['request'].user.favorite_recipes.all():
+                return True
+            return False
+        except AttributeError:
+            return False
 
     def check_is_in_shopping_cart(self, obj):
-        if obj in self.context['request'].user.recipe_in_shopping_cart.all():
-            return 'true'
-        return 'false'
+        try:
+            if obj in self.context['request'].user.recipe_in_shopping_cart.all():
+                return True
+            return False
+        except AttributeError:
+            return False
 
 
 class ShoppingCreateSerializer(ModelSerializer):
