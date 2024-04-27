@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
                             Recipes_Ingredients, Shopping_Cart, Tags)
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import Subscription
@@ -95,12 +95,42 @@ class SubscribeCreateSerializer(ModelSerializer):
 
 
 class Subscribe_GET_Serializer(ModelSerializer):
-    is_subscribed = serializers.BooleanField(read_only=True, default=True)
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='check_is_subscribed'
+    )
+    recipes = serializers.SerializerMethodField(
+        method_name='user_recipes'
+    )
+    recipes_count = serializers.SerializerMethodField(
+        method_name='user_recipes_count'
+    )
 
     class Meta:
         model = User
         fields = ('email', 'id', 'username',
-                  'first_name', 'last_name', 'is_subscribed')
+                  'first_name', 'last_name',
+                  'is_subscribed', 'recipes',
+                  'recipes_count',)
+
+    def user_recipes(self, obj):
+        recipes_queryset = obj.recipes.all()
+        limit = self.context['request'].query_params.get('recipes_limit')
+        if limit:
+            return ShortRecipeRead(
+                recipes_queryset[:int(limit)], many=True).data
+        return ShortRecipeRead(recipes_queryset, many=True).data
+
+    def user_recipes_count(self, obj):
+        return len(obj.recipes.all())
+
+    def check_is_subscribed(self, obj):
+        try:
+            obj.subscriber.get(user=self.context['request'].user)
+            return True
+        except Subscription.DoesNotExist:
+            return False
+        except TypeError:
+            return False
 
 
 class IngredientsAmountRead(ModelSerializer):
@@ -116,7 +146,7 @@ class IngredientsAmountRead(ModelSerializer):
 
 class IngredientsAmount(ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        source='ingredients', queryset=Ingredients.objects.all()
+        source='ingredients', queryset=Ingredients.objects.all(),
     )
 
     class Meta:
@@ -139,12 +169,30 @@ class RecipeCreateSerializer(ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()
     )
-    ingredients = IngredientsAmount(many=True, write_only=True)
+    ingredients = IngredientsAmount(many=True, write_only=True, required=True)
 
     class Meta:
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients',
                   'image', 'name', 'text', 'cooking_time')
+        extra_kwargs = {'tags': {'required': True}}
+
+    def validate_tags(self, value):
+        if len(value) == 0:
+            raise exceptions.ValidationError
+        if len(value) != len(set(value)):
+            raise exceptions.ValidationError
+        return value
+
+    def validate_ingredients(self, value):
+        if len(value) == 0:
+            raise exceptions.ValidationError
+        list_id_amount = []
+        for dict in value:
+            if dict in list_id_amount:
+                raise exceptions.ValidationError
+            list_id_amount.append(dict)
+        return value
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -197,7 +245,8 @@ class RecipeReadSerializer(ModelSerializer):
 
     def check_is_favorited(self, obj):
         try:
-            if obj in self.context['request'].user.favorite_recipes.all():
+            user = self.context['request'].user
+            if obj in user.favorite_recipes.all():
                 return True
             return False
         except AttributeError:
@@ -205,7 +254,8 @@ class RecipeReadSerializer(ModelSerializer):
 
     def check_is_in_shopping_cart(self, obj):
         try:
-            if obj in self.context['request'].user.recipe_in_shopping_cart.all():
+            user = self.context['request'].user
+            if obj in user.recipe_in_shopping_cart.all():
                 return True
             return False
         except AttributeError:

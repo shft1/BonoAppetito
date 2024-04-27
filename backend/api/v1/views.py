@@ -18,8 +18,8 @@ from .permissions import RecipePermission
 from .serializers import (CustomUserSerializer, FavoriteCreate,
                           IngredientsSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, ShoppingCreateSerializer,
-                          ShortRecipeRead, SubscribeCreateSerializer,
-                          TagsSerializer)
+                          ShortRecipeRead, Subscribe_GET_Serializer,
+                          SubscribeCreateSerializer, TagsSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -37,9 +37,10 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 
 class CustomUserViewSet(UserViewSet):
+    pagination_class = CustomPagination
 
     @action(detail=False, url_path='subscriptions',
-            serializer_class=CustomUserSerializer)
+            serializer_class=Subscribe_GET_Serializer)
     def get_subscriptions(self, request):
         subs_id_queryset = request.user.follow.values("follow")
         subs_id_list = [dict_id['follow'] for dict_id in subs_id_queryset]
@@ -56,7 +57,9 @@ class CustomUserViewSet(UserViewSet):
             serializer.save()
             user = UserCustom.objects.get(pk=id)
             return Response(
-                CustomUserSerializer(user, context={'request': request}).data,
+                Subscribe_GET_Serializer(
+                    user, context={'request': request}
+                ).data,
                 status=status.HTTP_201_CREATED,
             )
         object_sub = Subscription.objects.filter(user=request.user, follow=id)

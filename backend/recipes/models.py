@@ -33,7 +33,7 @@ class Recipes(models.Model):
         Ingredients, through='Recipes_Ingredients', related_name='recipes',
     )
     tags = models.ManyToManyField(
-        Tags, related_name='recipes'
+        Tags, related_name='recipes',
     )
     favorite = models.ManyToManyField(
         User, through='Recipe_Favorite', related_name='favorite_recipes',
@@ -55,9 +55,9 @@ class Recipes_Ingredients(models.Model):
         related_name='ingredients_amount'
     )
     ingredients = models.ForeignKey(
-        Ingredients, on_delete=models.CASCADE
+        Ingredients, on_delete=models.CASCADE,
     )
-    amount = models.IntegerField()
+    amount = models.IntegerField(validators=[MinValueValidator(1)])
 
     def __str__(self):
         return f'{self.recipes} - {self.ingredients}'
