@@ -44,9 +44,10 @@ class CustomUserViewSet(UserViewSet):
     def get_subscriptions(self, request):
         subs_id_queryset = request.user.follow.values("follow")
         subs_id_list = [dict_id['follow'] for dict_id in subs_id_queryset]
-        subs = UserCustom.objects.filter(pk__in=subs_id_list)
-        serializer = self.get_serializer(subs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        queryset = UserCustom.objects.filter(pk__in=subs_id_list)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', serializer_class=SubscribeCreateSerializer)
@@ -110,7 +111,7 @@ class RecipesViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data, partial=True
+            instance, data=request.data,
         )
         serializer.is_valid(raise_exception=True)
         new_recipe = self.perform_update(serializer)
