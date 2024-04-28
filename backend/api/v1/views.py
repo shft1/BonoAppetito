@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from django.http import Http404, HttpResponse
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -20,6 +21,8 @@ from .serializers import (CustomUserSerializer, FavoriteCreate,
                           RecipeReadSerializer, ShoppingCreateSerializer,
                           ShortRecipeRead, Subscribe_GET_Serializer,
                           SubscribeCreateSerializer, TagsSerializer)
+
+User = get_user_model()
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -50,13 +53,17 @@ class CustomUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'],
-            url_path='subscribe', serializer_class=SubscribeCreateSerializer)
+            url_path='subscribe', serializer_class=SubscribeCreateSerializer,
+            permission_classes=[IsAuthenticated])
     def post_del_subscriptions(self, request, id):
         if request.method == 'POST':
+            try:
+                user = UserCustom.objects.get(pk=id)
+            except User.DoesNotExist:
+                raise Http404
             serializer = self.get_serializer(data={'follow': id})
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            user = UserCustom.objects.get(pk=id)
             return Response(
                 Subscribe_GET_Serializer(
                     user, context={'request': request}
@@ -74,7 +81,6 @@ class CustomUserViewSet(UserViewSet):
 
 
 class RecipesViewSet(ModelViewSet):
-    # pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     permission_classes = (RecipePermission,)
