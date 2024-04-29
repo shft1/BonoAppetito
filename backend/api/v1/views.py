@@ -56,11 +56,11 @@ class CustomUserViewSet(UserViewSet):
             url_path='subscribe', serializer_class=SubscribeCreateSerializer,
             permission_classes=[IsAuthenticated])
     def post_del_subscriptions(self, request, id):
+        try:
+            user = UserCustom.objects.get(pk=id)
+        except User.DoesNotExist:
+            raise Http404
         if request.method == 'POST':
-            try:
-                user = UserCustom.objects.get(pk=id)
-            except User.DoesNotExist:
-                raise Http404
             serializer = self.get_serializer(data={'follow': id})
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -87,12 +87,17 @@ class RecipesViewSet(ModelViewSet):
 
     def get_queryset(self):
         query_params = self.request.query_params
+        user = self.request.user
         if query_params.get('is_favorited'):
-            user = self.request.user
-            return user.favorite_recipes.all()
+            try:
+                return user.favorite_recipes.all()
+            except AttributeError:
+                return None
         if query_params.get('is_in_shopping_cart'):
-            user = self.request.user
-            return user.recipe_in_shopping_cart.all()
+            try:
+                return user.recipe_in_shopping_cart.all()
+            except AttributeError:
+                return None
         return Recipes.objects.all()
 
     def get_serializer_class(self):
@@ -143,15 +148,20 @@ class RecipesViewSet(ModelViewSet):
                 ShortRecipeRead(recipe).data,
                 status=status.HTTP_201_CREATED
             )
-        else:
-            object_fav = Recipe_Favorite.objects.filter(
-                users=request.user, recipes=pk
-            )
-            if object_fav:
-                object_fav.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(data={'errors': 'Такого рецепта нет в избранном!'},
-                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            Recipes.objects.get(pk=pk)
+        except Recipes.DoesNotExist:
+            raise Http404
+        object_fav = Recipe_Favorite.objects.filter(
+            users=request.user, recipes=pk
+        )
+        if object_fav:
+            object_fav.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            data={'errors': 'Такого рецепта нет в избранном!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
     def post_del_shopping_cart(self, request, pk):
@@ -166,6 +176,10 @@ class RecipesViewSet(ModelViewSet):
                 ShortRecipeRead(recipe).data,
                 status=status.HTTP_201_CREATED
             )
+        try:
+            Recipes.objects.get(pk=pk)
+        except Recipes.DoesNotExist:
+            raise Http404
         object_shop = Shopping_Cart.objects.filter(
             users=request.user, recipes=pk
         )
