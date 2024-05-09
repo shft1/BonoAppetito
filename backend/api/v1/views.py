@@ -16,11 +16,11 @@ from users.models import Subscription, UserCustom
 from .filters import RecipeFilter
 from .pagination import CustomPagination
 from .permissions import RecipePermission
-from .serializers import (CustomUserSerializer, FavoriteCreate,
-                          IngredientsSerializer, RecipeCreateSerializer,
-                          RecipeReadSerializer, ShoppingCreateSerializer,
-                          ShortRecipeRead, Subscribe_GET_Serializer,
-                          SubscribeCreateSerializer, TagsSerializer)
+from .serializers import (FavoriteCreate, IngredientsSerializer,
+                          RecipeCreateSerializer, RecipeReadSerializer,
+                          ShoppingCreateSerializer, ShortRecipeRead,
+                          Subscribe_GET_Serializer, SubscribeCreateSerializer,
+                          TagsSerializer)
 
 User = get_user_model()
 
@@ -219,8 +219,8 @@ class RecipesViewSet(ModelViewSet):
         shopping_cart = render_to_string(
             'shopping_cart.html', context=context
         )
-        response = HttpResponse(content_type='text/plain')
-        header = 'attachment; filename="shopping_cart.txt"'
+        response = HttpResponse(content_type='text/html')
+        header = 'attachment; filename="shopping_cart.html"'
         response['Content-Disposition'] = header
         response.write(shopping_cart)
         return response
