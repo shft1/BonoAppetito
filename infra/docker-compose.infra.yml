@@ -32,7 +32,7 @@ services:
   gateway:
     build: .
     ports:
-      - 80:80
+      - 8000:80
     volumes:
       - static:/staticfiles/
       - media:/media/
