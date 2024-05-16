@@ -3,14 +3,15 @@ from django.http import Http404, HttpResponse
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Shopping_Cart, Tags)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
+                            Shopping_Cart, Tags)
 from users.models import Subscription, UserCustom
 
 from .filters import RecipeFilter
@@ -200,18 +201,18 @@ class RecipesViewSet(ModelViewSet):
                 'amount', 'ingredients__name', 'ingredients__measurement_unit'
             )
             for ingredient in ingredients_for_recipe:
-                name_ingredient = ingredient['ingredients__name']
+                ingredient = ingredient['ingredients__name']
                 amount = ingredient['amount']
                 measurement_unit = ingredient['ingredients__measurement_unit']
-                if name_ingredient in union_ing:
-                    union_ing[name_ingredient] = {
-                        'name': name_ingredient,
-                        'amount': union_ing[name_ingredient]['amount']+amount,
+                if ingredient in union_ing:
+                    union_ing[ingredient] = {
+                        'name': ingredient,
+                        'amount': union_ing[ingredient]['amount'] + amount,
                         'measurement_unit': measurement_unit
                     }
                 else:
-                    union_ing[name_ingredient] = {
-                        'name': name_ingredient,
+                    union_ing[ingredient] = {
+                        'name': ingredient,
                         'amount': amount,
                         'measurement_unit': measurement_unit
                     }
