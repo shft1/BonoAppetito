@@ -3,14 +3,15 @@ from django.http import Http404, HttpResponse
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Shopping_Cart, Tags)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
+                            Shopping_Cart, Tags)
 from users.models import Subscription, UserCustom
 
 from .filters import RecipeFilter
