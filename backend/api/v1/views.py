@@ -193,29 +193,29 @@ class RecipesViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='download_shopping_cart')
     def get_shopping_cart(self, request):
-        union_ing = dict()
+        un = dict()
         recipes_in_shopping_cart = request.user.recipe_in_shopping_cart.all()
         for recipe in recipes_in_shopping_cart:
             ingredients_for_recipe = recipe.ingredients_amount.values(
                 'amount', 'ingredients__name', 'ingredients__measurement_unit'
             )
             for ingredient in ingredients_for_recipe:
-                ingredient = ingredient['ingredients__name']
+                ingredient_name = ingredient['ingredients__name']
                 amount = ingredient['amount']
                 measurement_unit = ingredient['ingredients__measurement_unit']
-                if ingredient in union_ing:
-                    union_ing[ingredient] = {
-                        'name': ingredient,
-                        'amount': union_ing[ingredient]['amount'] + amount,
+                if ingredient_name in un:
+                    un[ingredient_name] = {
+                        'name': ingredient_name,
+                        'amount': un[ingredient_name]['amount'] + amount,
                         'measurement_unit': measurement_unit
                     }
                 else:
-                    union_ing[ingredient] = {
-                        'name': ingredient,
+                    un[ingredient_name] = {
+                        'name': ingredient_name,
                         'amount': amount,
                         'measurement_unit': measurement_unit
                     }
-        context = {'ingredients': union_ing.values()}
+        context = {'ingredients': un.values()}
         shopping_cart = render_to_string(
             'shopping_cart.html', context=context
         )
