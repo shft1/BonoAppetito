@@ -3,11 +3,12 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
-from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Recipes_Ingredients, Shopping_Cart, Tags)
 from rest_framework import exceptions, serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import (Ingredients, RecipeFavorite, Recipes,
+                            RecipesIngredients, ShoppingCart, Tags)
 from users.models import Subscription
 
 User = get_user_model()
@@ -37,9 +38,9 @@ class CustomUserSerializer(UserSerializer):
 
     def check_is_subscribed(self, obj):
         try:
-            obj.subscriber.get(user=self.context['request'].user)
+            obj.followers.get(username=self.context['request'].user.username)
             return True
-        except Subscription.DoesNotExist:
+        except User.DoesNotExist:
             return False
         except TypeError:
             return False
@@ -51,13 +52,13 @@ class FavoriteCreate(ModelSerializer):
     )
 
     class Meta:
-        model = Recipe_Favorite
-        fields = ('recipes', 'users')
+        model = RecipeFavorite
+        fields = ('users', 'recipes')
 
         validators = [
             UniqueTogetherValidator(
-                queryset=Recipe_Favorite.objects.all(),
-                fields=('recipes', 'users'),
+                queryset=RecipeFavorite.objects.all(),
+                fields=('users', 'recipes'),
                 message='Этот рецепт уже в избранном!'
             )
         ]
@@ -94,7 +95,7 @@ class SubscribeCreateSerializer(ModelSerializer):
         return value
 
 
-class Subscribe_GET_Serializer(ModelSerializer):
+class SubscribeGetSerializer(ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(
         method_name='check_is_subscribed'
     )
@@ -125,7 +126,7 @@ class Subscribe_GET_Serializer(ModelSerializer):
 
     def check_is_subscribed(self, obj):
         try:
-            obj.subscriber.get(user=self.context['request'].user)
+            obj.followers.get(username=self.context['request'].user.username)
             return True
         except Subscription.DoesNotExist:
             return False
@@ -140,7 +141,7 @@ class IngredientsAmountRead(ModelSerializer):
         source='ingredients.measurement_unit')
 
     class Meta:
-        model = Recipes_Ingredients
+        model = RecipesIngredients
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
@@ -150,7 +151,7 @@ class IngredientsAmount(ModelSerializer):
     )
 
     class Meta:
-        model = Recipes_Ingredients
+        model = RecipesIngredients
         fields = ('id', 'amount')
 
 
@@ -228,7 +229,7 @@ class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
     author = CustomUserSerializer()
     ingredients = IngredientsAmountRead(many=True, read_only=True,
-                                        source='ingredients_amount')
+                                        source='recipes_ingredients')
     is_favorited = serializers.SerializerMethodField(
         method_name='check_is_favorited'
     )
@@ -255,7 +256,7 @@ class RecipeReadSerializer(ModelSerializer):
     def check_is_in_shopping_cart(self, obj):
         try:
             user = self.context['request'].user
-            if obj in user.recipe_in_shopping_cart.all():
+            if obj in user.recipe_shopping_cart.all():
                 return True
             return False
         except AttributeError:
@@ -268,12 +269,12 @@ class ShoppingCreateSerializer(ModelSerializer):
     )
 
     class Meta:
-        model = Shopping_Cart
+        model = ShoppingCart
         fields = ('recipes', 'users')
 
         validators = [
             UniqueTogetherValidator(
-                queryset=Shopping_Cart.objects.all(),
+                queryset=ShoppingCart.objects.all(),
                 fields=('recipes', 'users'),
                 message='Этот рецепт уже в списке покупок!'
             )

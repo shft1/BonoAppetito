@@ -1,8 +1,9 @@
 from django.contrib import admin
-from recipes.models import (Ingredients, Recipe_Favorite, Recipes,
-                            Recipes_Ingredients, Shopping_Cart, Tags)
 
-from .models import Subscription, UserCustom
+from recipes.models import (Ingredients, RecipeFavorite, Recipes,
+                            RecipesIngredients, ShoppingCart, Tags)
+
+from .models import Subscription, UserModel
 
 
 class SearchAdmin(admin.ModelAdmin):
@@ -36,8 +37,8 @@ class RecipeAdmin(admin.ModelAdmin):
 admin.site.register(Tags, SearchAdmin)
 admin.site.register(Ingredients, IngredientsAdmin)
 admin.site.register(Recipes, RecipeAdmin)
-admin.site.register(Recipes_Ingredients, SearchAdmin)
-admin.site.register(Recipe_Favorite, SearchAdmin)
-admin.site.register(Shopping_Cart, SearchAdmin)
-admin.site.register(UserCustom, UserAdmin)
+admin.site.register(RecipesIngredients, SearchAdmin)
+admin.site.register(RecipeFavorite, SearchAdmin)
+admin.site.register(ShoppingCart, SearchAdmin)
+admin.site.register(UserModel, UserAdmin)
 admin.site.register(Subscription, SearchAdmin)

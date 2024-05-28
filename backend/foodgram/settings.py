@@ -18,13 +18,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api.apps.ApiConfig',
-    'recipes.apps.RecipesConfig',
-    'users.apps.UsersConfig',
+
     'colorfield',
     'rest_framework.authtoken',
     'djoser',
-    'django_filters'
+    'django_filters',
+
+    'api.apps.ApiConfig',
+    'recipes.apps.RecipesConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +69,7 @@ if os.getenv('POSTGRES_DB'):
             'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
             'USER': os.getenv('POSTGRES_USER', 'foodgram'),
             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', ''),
+            'HOST': os.getenv('DB_HOST', 'foodgram'),
             'PORT': os.getenv('DB_PORT', 5432)
         }
     }
@@ -112,7 +114,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.UserCustom'
+AUTH_USER_MODEL = 'users.UserModel'
 
 REST_FRAMEWORK = {
     'SEARCH_PARAM': 'name',
