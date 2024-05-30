@@ -56,7 +56,7 @@ class UserViewSetMix(UserViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request, id):
         user = get_object_or_404(User, pk=id)
-        serializer = self.get_serializer(data={'follow': id})
+        serializer = self.get_serializer(data={'following': user.id})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -66,8 +66,10 @@ class UserViewSetMix(UserViewSet):
 
     @subscriptions.mapping.delete
     def del_subscriptions(self, request, id):
-        get_object_or_404(User, pk=id)
-        object_sub = Subscription.objects.filter(user=request.user, follow=id)
+        user = get_object_or_404(User, pk=id)
+        object_sub = Subscription.objects.filter(
+            follower=request.user, following=user
+        )
         if object_sub:
             object_sub.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -174,9 +176,9 @@ class RecipesViewSet(ModelViewSet):
 
     @shopping_cart.mapping.delete
     def del_shopping_cart(self, request, pk):
-        get_object_or_404(Recipes, pk=pk)
+        recipe = get_object_or_404(Recipes, pk=pk)
         object_shop = ShoppingCart.objects.filter(
-            users=request.user, recipes=pk
+            users=request.user, recipes=recipe
         )
         if object_shop:
             object_shop.delete()

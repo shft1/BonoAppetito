@@ -164,6 +164,7 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        unique_together = ['recipes', 'users']
         default_related_name = 'shopping_cart'
         verbose_name = 'рецепт в списке покупок у пользователя'
         verbose_name_plural = 'Рецепты в списке покупок у пользователей'

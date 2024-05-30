@@ -41,13 +41,13 @@ User = get_user_model()
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(
+    follower = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='user_subscribe',
         verbose_name='Подписчик'
     )
-    follow = models.ForeignKey(
+    following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='user_followers',
@@ -59,4 +59,4 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
-        return f'Подписчик: {self.user} - Пользователь: {self.follow}'
+        return f'Подписчик: {self.follower} - Пользователь: {self.following}'

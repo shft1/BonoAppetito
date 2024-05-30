@@ -25,7 +25,7 @@ class IngredientsSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class CustomUserSerializer(UserSerializer):
+class UserSerializerMix(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(
         method_name='check_is_subscribed'
     )
@@ -70,23 +70,23 @@ class ShortRecipeRead(ModelSerializer):
 
 
 class SubscribeCreateSerializer(ModelSerializer):
-    user = serializers.HiddenField(
+    follower = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
 
     class Meta:
         model = Subscription
-        fields = ('user', 'follow',)
+        fields = ('follower', 'following')
 
         validators = [
             UniqueTogetherValidator(
                 queryset=Subscription.objects.all(),
-                fields=('user', 'follow'),
+                fields=('follower', 'following'),
                 message='Вы уже подписаны на этого пользователя.'
             )
         ]
 
-    def validate_follow(self, value):
+    def validate_following(self, value):
         if value == self.context['request'].user:
             raise serializers.ValidationError(
                 'Нельзя на себя подписываться!'
@@ -226,7 +226,7 @@ class RecipeCreateSerializer(ModelSerializer):
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
-    author = CustomUserSerializer()
+    author = UserSerializerMix()
     ingredients = IngredientsAmountRead(many=True, read_only=True,
                                         source='recipes_ingredients')
     is_favorited = serializers.SerializerMethodField(
@@ -269,7 +269,7 @@ class ShoppingCreateSerializer(ModelSerializer):
 
     class Meta:
         model = ShoppingCart
-        fields = ('recipes', 'users')
+        fields = ('users', 'recipes')
 
         validators = [
             UniqueTogetherValidator(
