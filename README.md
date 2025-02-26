@@ -72,6 +72,17 @@ docker compose -f docker-compose.infra.yml exec -it backend bash
 При каждом пуше в ветку `master` запускается процесс CI/CD, который проверяет backend код линтером и запускает автотесты, затем собирает образы backend, frontend, gateway и пушит их на DockerHub  
 _(Для этого нужно добавить secrets в настройках репозитория)_
 
+
+### Демонстрация возможностей
+**_В проекте доступна система регистрации и аутентификации пользователей._**
+<img width="1129" alt="image" src="https://github.com/user-attachments/assets/7ce659d2-2827-4bb8-8c4b-6b1c0b4144e7" />
+
+**_После регистрации пользователь переадресовывается на страницу входа._**
+<img width="1101" alt="image" src="https://github.com/user-attachments/assets/b8d854a8-4b21-4911-a71d-272209795e9c" />
+
+
+
+
 ### Автор 
 Алексей Малков
 [Ссылка на гитхаб](https://github.com/shft1)
