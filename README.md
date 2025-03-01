@@ -8,7 +8,7 @@
 
 ### Стек технологий:
 Python, Django REST Framework, Docker, Docker Compose, Nginx, GitHub Actions, PostgreSQL, SQLite, React
-
+.
 ---
 
 ### Инструкция по развертыванию:
