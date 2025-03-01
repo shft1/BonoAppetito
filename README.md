@@ -1,5 +1,5 @@
 # BonoAppetito
-[![Main Kitty workflow](https://github.com/shft1/kittygram_final/actions/workflows/main.yml/badge.svg)](https://github.com/shft1/kittygram_final/actions/workflows/main.yml)
+[![BonoAppetito workflow](https://github.com/shft1/BonoAppetito/actions/workflows/main.yml/badge.svg)](https://github.com/shft1/BonoAppetito/actions/workflows/main.yml)
 
 ---
 
