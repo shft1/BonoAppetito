@@ -1,4 +1,4 @@
-name: Main Foodgram Workflow
+name: BonoAppetito Workflow
 
 on:
   push:
