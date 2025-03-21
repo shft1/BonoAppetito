@@ -17,7 +17,7 @@
 
 ---
 
-### Ссылка на сайт - https://bonoappetito.ru
+### Ссылка на сайт - https://bonoappetito.ru/recipes
 
 ---
 
