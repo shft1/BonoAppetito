@@ -27,7 +27,7 @@
 ---
 
 ### Стек технологий:
-Python, Django REST Framework, Docker, Docker Compose, Nginx, GitHub Actions (CI/CD), PostgreSQL, SQLite, React
+Python, Django REST Framework, Docker, Docker Compose, Nginx, GitHub Actions (CI/CD), PostgreSQL, SQLite, React.
 
 ---
 
